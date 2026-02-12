@@ -53,6 +53,19 @@ services:
     volumes:
       - ./realm-export.json:/opt/keycloak/data/import/realm.json:ro
 
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - keycloak
+      - postgres-core
+    networks:
+      - backend-network
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
 volumes:
   core_db_data:
   notification_db_data:
