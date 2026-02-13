@@ -1,76 +1,7 @@
+version: "3.8"
+
 services:
-  postgres-core:
-    image: postgres:14
-    container_name: postgres-core
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: core_user
-      POSTGRES_PASSWORD: core_password
-      TZ: Asia/Yangon
-      PGTZ: Asia/Yangon
-    ports:
-      - "5432:5432"
-    volumes:
-      - core_db_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - backend-network
 
-  # postgres-notification:
-  #   image: postgres:16
-  #   container_name: postgres-notification
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_DB: notification_db
-  #     POSTGRES_USER: notification_user
-  #     POSTGRES_PASSWORD: notification_password
-  #   ports:
-  #     - "5433:5432"
-  #   volumes:
-  #     - notification_db_data:/var/lib/postgresql/data
-  #     - ./db/notification/init.sql:/docker-entrypoint-initdb.d/init.sql
-  #   networks:
-  #     - backend-network
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.5.3
-    container_name: keycloak_dev
-    command: start-dev --import-realm
-    ports:
-      - "5000:8080"
-    environment:
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres-core:5432/keycloak
-      KC_DB_USERNAME: core_user
-      KC_DB_PASSWORD: core_password
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_IMPORT_STRATEGY: OVERWRITE_EXISTING
-    networks:
-      - backend-network
-    depends_on:
-      - postgres-core
-    volumes:
-      - ./realm-export.json:/opt/keycloak/data/import/realm.json:ro
-
-  nginx:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - keycloak
-      - postgres-core
-    networks:
-      - backend-network
-    extra_hosts:
-    - "host.docker.internal:host-gateway"
-
-
-  # ===============================
-  # ELK STACK
-  # ===============================
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
     container_name: elasticsearch
@@ -176,13 +107,10 @@ services:
     networks:
       - elk
 
+
 volumes:
-  core_db_data:
-  notification_db_data:
   es_data:
 
 networks:
-  backend-network:
-    driver: bridge
   elk:
     driver: bridge
