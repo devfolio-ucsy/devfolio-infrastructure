@@ -107,6 +107,28 @@ services:
     networks:
       - elk
 
+  kibana-init:
+    image: curlimages/curl:latest
+    depends_on:
+      - kibana
+    entrypoint: >
+      sh -c "
+      sleep 20;
+      curl -X POST http://kibana:5601/api/data_views/data_view \
+      -H 'kbn-xsrf: true' \
+      -H 'Content-Type: application/json' \
+      -d '{
+        \"data_view\": {
+          \"title\": \"spring-microservices-logs-*\",
+          \"name\": \"Spring Logs\",
+          \"timeFieldName\": \"@timestamp\"
+        }
+      }';
+      exit 0;
+      "
+    networks:
+      - elk
+
 
 volumes:
   es_data:

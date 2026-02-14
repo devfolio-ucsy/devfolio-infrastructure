@@ -68,19 +68,35 @@ services:
     - "host.docker.internal:host-gateway"
 
   minio:
-    image: quay.io/minio/minio:latest
+    image: quay.io/minio/minio:RELEASE.2024-12-18T13-15-44Z
     container_name: minio
+    command: server /data --console-address ":9001"
     ports:
-      - "9000:9000" # API Port
-      - "9001:9001" # Web Console Port
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: password123 # Change this for production!
+      MINIO_ROOT_PASSWORD: password123
     volumes:
       - minio_data:/data
-    command: server /data --console-address ":9001"
-    restart: always
+    networks:
+      - backend-network
+    restart: unless-stopped
 
+  minio-init:
+    image: quay.io/minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 2;
+      mc alias set myminio http://minio:9000 admin password123;
+      mc mb myminio/profile-images;
+      mc policy set none myminio/profile-images;
+      exit 0;
+      "
+    networks:
+      - backend-network
 
 volumes:
   core_db_data:
