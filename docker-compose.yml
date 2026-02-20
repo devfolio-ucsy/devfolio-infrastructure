@@ -16,6 +16,23 @@ services:
     networks:
       - backend-network
 
+  postgres-notification:
+    image: postgres:14
+    container_name: postgres-notification
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: notification_user
+      POSTGRES_PASSWORD: notification_password
+      TZ: Asia/Yangon
+      PGTZ: Asia/Yangon
+    ports:
+      - "5433:5432"
+    volumes:
+      - notification_db_data:/var/lib/postgresql/data
+      - ./init_notification_db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - backend-network
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.5.3
     container_name: keycloak_dev
@@ -208,7 +225,16 @@ services:
       "
     networks:
       - elk
-
+      
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: devfolio-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 
 volumes:
   core_db_data:
