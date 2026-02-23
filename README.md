@@ -24,6 +24,7 @@ An open-source identity and access management solution.
   - **Password**: `admin`
 - **Version**: `26.5.3`
 - **Auto-Import**: The realm configuration is automatically imported from `realm-export.json` on startup.
+- **SMTP Password Injection**: `KEYCLOAK_SMTP_PASSWORD` is injected into the realm file before Keycloak starts.
 
 ## Prerequisites
 
@@ -39,11 +40,21 @@ An open-source identity and access management solution.
    ```
 
 2. **Start the services**:
+   - Set SMTP password in your shell (PowerShell):
+     ```powershell
+     $env:KEYCLOAK_SMTP_PASSWORD="your-smtp-app-password"
+     ```
+   - Or create a `.env` file in project root:
+     ```dotenv
+     KEYCLOAK_SMTP_PASSWORD=your-smtp-app-password
+     ```
+
+3. **Start the services**:
    ```powershell
    docker-compose up -d
    ```
 
-3. **Verify the services**:
+4. **Verify the services**:
    - Check if containers are running:
      ```powershell
      docker-compose ps
@@ -61,3 +72,4 @@ An open-source identity and access management solution.
 - The PostgreSQL container uses a persistent volume named `core_db_data`.
 - Timezone is set to `Asia/Yangon`.
 - Keycloak is running in development mode (`start-dev`).
+- Keycloak startup fails fast if `KEYCLOAK_SMTP_PASSWORD` is missing, preventing import with an invalid SMTP password.
